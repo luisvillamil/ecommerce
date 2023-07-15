@@ -74,9 +74,9 @@ async def test_add_list(mocker, mock_db_client):
 async def test_query(mocker, mock_db_client):
 
     # Mock a Column instance for order_by
-    mock_column = User.username
+    mock_column = User.email
     # Mock the where clause
-    mock_where = User.username == "testuser"
+    mock_where = User.email == "testuser@email.com"
 
     # Mock the session's execute method and its return value
     # mock_execute = mocker.patch('sqlalchemy.orm.session.Session.execute', new_callable=AsyncMock)
