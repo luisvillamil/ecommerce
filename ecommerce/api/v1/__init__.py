@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from ecommerce.api.v1.endpoints import login
+from ecommerce.api.v1.endpoints import login, items
 
 api_router = APIRouter()
 api_router.include_router(login.router, tags=["login"])
+api_router.include_router(items.router, tags=["items"])

@@ -16,6 +16,7 @@ python-multipart = "^0.0.6"
 pydantic = {version = "*", extras = ["email"]}
 python-jose = {version = "*", extras = ["cryptography"]}
 passlib = {version = "*", extras = ["bcrypt"]}
+httpx = "^0.24.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
