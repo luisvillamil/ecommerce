@@ -14,7 +14,7 @@ class AsyncDatabaseClient:
         self.SessionLocal = sessionmaker(
             self.engine, expire_on_commit=False, class_=AsyncSession)
         self.session = None # defined in context manager
-    
+
     async def __aenter__(self):
         # Open a new session and begin a transaction when entering the context
         self.session = self.SessionLocal()
@@ -30,16 +30,16 @@ class AsyncDatabaseClient:
         # Close the session when exiting the context
         await self.session.close()
         self.session = None
-    
+
     async def get_db_session(self):
         """ Get new db session """
         async with self.SessionLocal() as session:
             yield session
-    
+
     async def add_list(self, *args:Iterable[Base]):
         """ Adds objects to database """
         await self.session.add_all(args)
-    
+
     async def query(
             self, model_class:Type[DeclarativeMeta],
             *where: Iterable[ClauseElement],

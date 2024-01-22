@@ -1,9 +1,7 @@
 from fastapi.testclient import TestClient
-
 from ecommerce.main import app
 
 client = TestClient(app)
-
 
 # def test_token():
 #     response = client.post(

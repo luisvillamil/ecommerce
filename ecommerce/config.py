@@ -9,24 +9,38 @@
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+from pydantic import (
+    AnyHttpUrl, EmailStr, HttpUrl,
+    PostgresDsn, field_validator, ValidationInfo
+    )
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Main settings for project, to be defined in deployment yaml"""
     API_VERSION: str = "/api/v1"
-    SECRET_KEY: str = '' # secrets.token_urlsafe(32)
+    # secrets.token_urlsafe(32)
+    SECRET_KEY: str = ''
     ALGORITHM:str = "HS256"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     SERVER_NAME: str = "Ecommmerce"
     SERVER_HOST: AnyHttpUrl = "http://localhost:8080"
+    # postgres data
+    POSTGRES_SCHEME: str = "postgresql+psycopg2"
+    POSTGRES_SERVER: str = "127.0.0.1"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "password"
+    POSTGRES_DB: str = "ecommerce"
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
     # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS", mode='before')
+    @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+        """takes str list and converst to list of urls"""
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
@@ -40,25 +54,31 @@ class Settings(BaseSettings):
     # def sentry_dsn_can_be_blank(cls, v: str) -> Optional[str]:
     #     if len(v) == 0:
     #         return None
-    #     return v
+    #     return vPOSTGRES_SERVER: str = "127.0.0.1"
+    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    # POSTGRES_SERVER: str
-    # POSTGRES_USER: str
-    # POSTGRES_PASSWORD: str
-    # POSTGRES_DB: str
-    # SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
-
-    # @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    # def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-    #     if isinstance(v, str):
-    #         return v
-    #     return PostgresDsn.build(
-    #         scheme="postgresql",
-    #         user=values.get("POSTGRES_USER"),
-    #         password=values.get("POSTGRES_PASSWORD"),
-    #         host=values.get("POSTGRES_SERVER"),
-    #         path=f"/{values.get('POSTGRES_DB') or ''}",
-    #     )
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode='before')
+    @classmethod
+    def assemble_db_connection(cls, v: Optional[str], values: ValidationInfo) -> Any:
+        """builds sqlalchemy compatible connection"""
+        if isinstance(v, str):
+            return v
+        postgres_url: str = (
+            f"{values.data.get('POSTGRES_SCHEME')}://"
+            f"{values.data.get('POSTGRES_USER')}:"
+            f"{values.data.get('POSTGRES_PASSWORD')}"
+            f"@{values.data.get('POSTGRES_SERVER')}/"
+            f"{values.data.get('POSTGRES_DB')}"
+        )
+        return PostgresDsn(postgres_url)
+        # had to comment this because pydantic V2 removed the build method >:(
+        # return PostgresDsn.build(
+        #     scheme="postgresql",
+        #     user=values.data.get("POSTGRES_USER"),
+        #     password=values.data.get("POSTGRES_PASSWORD"),
+        #     host=values.data.get("POSTGRES_SERVER"),
+        #     path=f"/{values.data.get('POSTGRES_DB') or ''}",
+        # )
 
     # SMTP_TLS: bool = True
     # SMTP_PORT: Optional[int] = None
@@ -87,12 +107,10 @@ class Settings(BaseSettings):
     #     )
 
     # EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    # FIRST_SUPERUSER: EmailStr
-    # FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER: EmailStr = "test@example.com"
+    FIRST_SUPERUSER_PASSWORD: str = "test123"
     # USERS_OPEN_REGISTRATION: bool = False
-
-    class Config:
-        case_sensitive = True
+    model_config = SettingsConfigDict(case_sensitive=True)
 
 
 settings = Settings()

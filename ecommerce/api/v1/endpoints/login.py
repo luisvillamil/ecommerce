@@ -5,23 +5,25 @@ import logging
 
 # external libraries
 from fastapi import Depends, APIRouter, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlmodel import Session
 
 # internal libraries
 from ecommerce.config import settings
-from ecommerce.db import fake_users_db
-from ecommerce.schemas.user import UserInDB, User
+from ecommerce.db import db_client, authenticate_user
+from ecommerce.schemas.user import User, UserRead
 from ecommerce.schemas.token import Token
-from ecommerce.core.security import authenticate_user, create_access_token
-from ecommerce.api.v1.dependencies import fake_hash_password, get_current_active_user
+from ecommerce.core.security import create_access_token
+from ecommerce.api.v1.dependencies import get_current_active_user
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = await authenticate_user(fake_users_db, form_data.username, form_data.password)
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[Session, Depends(db_client.get_session)]):
+    user = await authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -35,10 +37,10 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/ping")
-async def read_sub(token: Annotated[str, Depends(get_current_active_user)]):
+async def read_sub(_token: Annotated[str, Depends(get_current_active_user)]):
     return {"message": "Hello World from admin"}
 
-@router.get("/users/me/", response_model=User)
+@router.get("/users/me/", response_model=UserRead)
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)]):
     return current_user
