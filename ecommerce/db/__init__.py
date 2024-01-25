@@ -9,6 +9,7 @@ from sqlmodel import create_engine, Session, select, SQLModel
 # internal libraries
 from ecommerce.config import settings
 from ecommerce.db.user import *
+from ecommerce.db.product import *
 
 # constants
 logger = logging.getLogger("uvicorn")
@@ -63,4 +64,5 @@ class DbClient:
         """Ensure transactions finish"""
         pass
 
-db_client = DbClient(echo = True)
+db_client = DbClient(
+    echo = True if settings.DEBUG else False)

@@ -1,11 +1,5 @@
 # import os
 
-# # web config
-# host = os.getenv("WEB_HOST", "127.0.0.1")
-# port = int(os.getenv("WEB_PORT", 8080))
-# project_name = os.getenv("PROJECT_NAME", "Ecommerce App")
-# api_version = os.getenv("API_VERSION", "api/v1")
-
 import secrets
 from typing import Any, Dict, List, Optional, Union
 
@@ -19,6 +13,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Main settings for project, to be defined in deployment yaml"""
     API_VERSION: str = "/api/v1"
+    PRODUCTION: bool = False
+    DEBUG: bool = False
     # secrets.token_urlsafe(32)
     SECRET_KEY: str = ''
     ALGORITHM:str = "HS256"

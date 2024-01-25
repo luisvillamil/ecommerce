@@ -30,8 +30,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_VERSION}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
+    openapi_url = None if settings.PRODUCTION is True else f"{settings.API_VERSION}/openapi.json"
 )
 
 # Set all CORS enabled origins
