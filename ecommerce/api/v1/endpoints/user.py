@@ -8,7 +8,7 @@ from fastapi import Depends, APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session
 # internal libraries
-from ecommerce.db import db_client, create_user
+from ecommerce.db import db_client, create_user, get_user_by_id
 from ecommerce.schemas.user import User, UserCreate, UserRead
 
 logger = logging.getLogger("uvicorn")
@@ -20,8 +20,16 @@ async def create_user_endpoint(
     return await create_user(session, new_user)
 
 @router.get("/user", response_model=UserRead)
-async def get_user_endpoint(_id:str):
-    pass
+async def get_user_endpoint(
+    _id:str, session:Session=Depends(db_client.get_session)):
+    user = await get_user_by_id(session, _id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
 
 @router.put("/user", response_model=UserRead)
 async def update_user_endpoint(_id:str, **kwargs):

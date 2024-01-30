@@ -10,13 +10,17 @@ import time
 from sqlmodel import SQLModel, Field, Relationship
 
 __all__ = (
-    "CategoryBase",
     "Category",
     "CategoryCreate",
     "CategoryRead",
     "CategoryReadWithProducts",
-    "ProductBase", "Product", 
-    "ProductCreate", "ProductRead",
+    "Product", 
+    "ProductCreate",
+    "ProductRead",
+    "ProductReadWithAttributes",
+    "ProductUpdate",
+    "ProductAttribute",
+    "ProductAttributeCreate",
     "ItemBase", "Item", "ItemRead"
 )
 
@@ -54,20 +58,36 @@ class Product(ProductBase, table=True):
 
 class ProductRead(ProductBase):
     """Product Read model"""
+    id: int
 
 class ProductCreate(ProductBase):
-    pass
+    """Used by api to create products.
+    extra attributes are appeneded by create_product function in db"""
+
+class ProductUpdate(SQLModel):
+    """Used by api to update products.
+    extra attributes are appeneded by create_product function in db"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+
 
 # Product Attributes
 class ProductAttributeBase(SQLModel):
     name: str
     value: str
-    val_type: str # to be converted back if needed
+    # val_type: str # to be converted back if needed
 
 class ProductAttribute(ProductAttributeBase, table = True):
     id: int = Field(default=None, primary_key=True)
     product_id: int = Field(foreign_key="product.id")
     product: "Product" = Relationship(back_populates="attributes")
+
+class ProductAttributeCreate(ProductAttributeBase):
+    """Used by API to add extra attributes to product"""
+
+class ProductAttributeRead(ProductAttributeBase):
+    """Product Read model"""
 
 # Items
 class ItemBase(SQLModel):
@@ -104,3 +124,7 @@ class ItemRead(ItemBase):
 class CategoryReadWithProducts(CategoryRead):
     """Inherits from CategoryRead, used to display products from category"""
     products: Optional[List[ProductRead]] = None
+
+class ProductReadWithAttributes(ProductRead):
+    """Inherits from CategoryRead, used to display products from category"""
+    attributes: Optional[List[ProductAttributeRead]] = None

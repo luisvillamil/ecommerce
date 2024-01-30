@@ -29,7 +29,7 @@ async def post_category(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)) from e
 
-@router.get("/category", response_model=CategoryRead)
+@router.get("/category", response_model=CategoryReadWithProducts)
 async def get_category_endpoint(
     _id:int, session:Session=Depends(db_client.get_session)):
     category = await get_category_by_id(session, _id)
@@ -37,7 +37,7 @@ async def get_category_endpoint(
         raise HTTPException(status_code=404, detail="Category not found")
     return category
 
-@router.get("/category/list", response_model=List[CategoryReadWithProducts])
+@router.get("/category/list", response_model=List[CategoryRead])
 async def get_category_list_endpoint(
     session:Session=Depends(db_client.get_session),
     offset: int = 0,

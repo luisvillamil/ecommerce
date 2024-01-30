@@ -9,6 +9,7 @@ from sqlmodel import create_engine, Session, select, SQLModel
 # internal libraries
 from ecommerce.config import settings
 from ecommerce.db.user import *
+from ecommerce.db.category import *
 from ecommerce.db.product import *
 
 # constants

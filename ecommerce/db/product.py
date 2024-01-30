@@ -2,51 +2,81 @@
 
 # base libraries
 from uuid import UUID
+from typing import Optional, List
 # external libraries
 from sqlmodel import select, Session, or_
-from sqlalchemy.exc import IntegrityError
 
 # internal libraries
 from ecommerce.schemas import (
-    Product, ProductCreate, Category, CategoryCreate)
+    Category,
+    Product,
+    ProductCreate,
+    ProductUpdate,
+    ProductAttribute,
+    ProductAttributeCreate)
 
 
 # exports
 __all__ = (
-    "create_category",
-    "get_category_by_id",
-    "get_categories",
+    "create_product",
+    "get_product_by_id",
+    "get_products",
+    "get_product_by_name",
+    "update_product",
+    "delete_product"
 )
 
-async def create_category(session:Session, category:CategoryCreate):
-    """Creates new user in database"""
-    # hash password before saving in db
-    new_category = Category.model_validate(category)
-    session.add(new_category)
-    try:
-        session.commit()
-    except IntegrityError as e:
-        raise ValueError("Category name or code already exists") from e
-    session.refresh(new_category)
-    return new_category
-
-async def get_category_by_id(session:Session, _id:int):
-    """Gets category by id
-
-    Args:
-        session (Session): database session
-        _id (int): numerical identifier for category
-    """
-    return session.get(Category, {"id": _id})
-
-async def get_categories(session:Session, offset:int, limit:int):
-    categories = session.exec(
-        select(Category).offset(offset).limit(limit)).all()
-    return categories
-
-async def create_product(session:Session, product:ProductCreate):
-    new_product = Product.model_validate(product)
+async def create_product(
+    session:Session, product:ProductCreate,
+    product_attributes:Optional[List[ProductAttributeCreate]]=None):
+    category = session.get(Category, {"id": product.category_id})
+    new_product = Product(
+        name = product.name,
+        description= product.description,
+        image_url = product.image_url,
+        category = category
+    )
+    new_product.attributes = [
+            ProductAttribute(
+                name = attribute.name,
+                value = attribute.value,
+                product = new_product
+            ) for attribute in product_attributes
+        ]
     session.add(new_product)
+    session.add_all(new_product.attributes)
     session.commit()
     session.refresh(new_product)
     return new_product
+
+async def get_product_by_id(session:Session, _id:int):
+    return session.get(Product, {"id": _id})
+
+async def get_products(session:Session, offset:int, limit:int):
+    """Gets list of categories"""
+    categories = session.exec(
+        select(Product).offset(offset).limit(limit)).all()
+    return categories
+
+async def get_product_by_name(session:Session, name:str):
+    stmt = select(Product).where(Product.name == name)
+    return session.exec(stmt).one_or_none()
+
+async def update_product(session:Session, _id:int, product:ProductUpdate):
+    db_product = await get_product_by_id(session, _id)
+    if not db_product:
+        raise LookupError(f"product {_id} not found.")
+    product_data = product.model_dump(exclude_unset=True)
+    for key, value in product_data.items():
+        setattr(db_product, key, value)
+    session.add(db_product)
+    session.commit()
+    session.refresh(db_product)
+    return db_product
+
+async def delete_product(session:Session, _id:int):
+    product = await get_product_by_id(session, _id)
+    if not product:
+        raise LookupError(f"product {_id} not found.")
+    session.delete(product)
+    session.commit()
