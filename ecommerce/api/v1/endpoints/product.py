@@ -24,14 +24,13 @@ router = APIRouter()
 async def post_product(*,
     _token: Annotated[str, Depends(get_current_active_user)],
     session:Session=Depends(db_client.get_session),
-    new_product:ProductCreate,
-    product_attributes:Optional[List[ProductAttributeCreate]]):
+    new_product:ProductCreate):
     """creates category from defined schema. Admin only"""
-    print(new_product, product_attributes)
+    # print(new_product, product_attributes)
     try:
-        category = await create_product(session, new_product, product_attributes)
+        category = await create_product(session, new_product)
         return category
-    except ValueError as e:
+    except (ValueError, LookupError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)) from e

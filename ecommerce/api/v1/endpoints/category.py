@@ -32,10 +32,12 @@ async def post_category(
 @router.get("/category", response_model=CategoryReadWithProducts)
 async def get_category_endpoint(
     _id:int, session:Session=Depends(db_client.get_session)):
-    category = await get_category_by_id(session, _id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    return category
+    try:
+        category = await get_category_by_id(session, _id)
+        return category
+    except LookupError as e:
+        raise HTTPException(
+            status_code=404, detail=str(e)) from e
 
 @router.get("/category/list", response_model=List[CategoryRead])
 async def get_category_list_endpoint(

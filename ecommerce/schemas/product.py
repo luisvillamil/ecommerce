@@ -60,10 +60,6 @@ class ProductRead(ProductBase):
     """Product Read model"""
     id: int
 
-class ProductCreate(ProductBase):
-    """Used by api to create products.
-    extra attributes are appeneded by create_product function in db"""
-
 class ProductUpdate(SQLModel):
     """Used by api to update products.
     extra attributes are appeneded by create_product function in db"""
@@ -74,8 +70,12 @@ class ProductUpdate(SQLModel):
 
 # Product Attributes
 class ProductAttributeBase(SQLModel):
+    """Base class for product attributes,
+product attributes are key, value pair tables.
+This class will contain the key, and a one-to-many relationship to 
+the list of possible values"""
     name: str
-    value: str
+    # value: str
     # val_type: str # to be converted back if needed
 
 class ProductAttribute(ProductAttributeBase, table = True):
@@ -120,6 +120,11 @@ class Item(ItemBase, table=True):
 
 class ItemRead(ItemBase):
     product: "ProductRead"
+
+class ProductCreate(ProductBase):
+    """Used by api to create products.
+    extra attributes are appeneded by create_product function in db"""
+    attributes: Optional[List[ProductAttributeCreate]] = None
 
 class CategoryReadWithProducts(CategoryRead):
     """Inherits from CategoryRead, used to display products from category"""

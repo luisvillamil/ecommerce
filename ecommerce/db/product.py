@@ -14,6 +14,7 @@ from ecommerce.schemas import (
     ProductUpdate,
     ProductAttribute,
     ProductAttributeCreate)
+from .category import get_category_by_id
 
 
 # exports
@@ -27,22 +28,21 @@ __all__ = (
 )
 
 async def create_product(
-    session:Session, product:ProductCreate,
-    product_attributes:Optional[List[ProductAttributeCreate]]=None):
-    category = session.get(Category, {"id": product.category_id})
+    session:Session, product:ProductCreate):
+    category = await get_category_by_id(session, product.category_id)
     new_product = Product(
         name = product.name,
         description= product.description,
         image_url = product.image_url,
         category = category
     )
-    new_product.attributes = [
-            ProductAttribute(
-                name = attribute.name,
-                value = attribute.value,
-                product = new_product
-            ) for attribute in product_attributes
-        ]
+    if product.attributes:
+        new_product.attributes = [
+                ProductAttribute(
+                    name = attribute.name,
+                    product = new_product
+                ) for attribute in product.attributes
+            ]
     session.add(new_product)
     session.add_all(new_product.attributes)
     session.commit()

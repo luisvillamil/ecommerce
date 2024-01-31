@@ -34,7 +34,10 @@ async def get_category_by_id(session:Session, _id:int):
         session (Session): database session
         _id (int): numerical identifier for category
     """
-    return session.get(Category, {"id": _id})
+    category = session.get(Category, {"id": _id})
+    if not category:
+        raise LookupError(f"no category {_id} found")
+    return category
 
 async def get_categories(session:Session, offset:int, limit:int):
     """Gets list of categories"""
