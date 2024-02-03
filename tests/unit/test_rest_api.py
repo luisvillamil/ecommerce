@@ -11,6 +11,7 @@ from ecommerce.schemas import User, Category
 from ecommerce.config import settings
 from ecommerce.core.security import get_password_hash
 
+API_VERSION = "/api/v1"
 
 @pytest.fixture(name="session")
 def session_fixture():
@@ -49,7 +50,7 @@ def client_fixture(session):
 #     )
 
 def get_token(client:TestClient):
-    response = client.post("/api/v1/token", data={
+    response = client.post(f"{API_VERSION}/token", data={
         "grant_type": "password",
         "username": "test_admin",
         "password": "test_123"
@@ -60,17 +61,54 @@ def get_token(client:TestClient):
 
 @pytest.mark.asyncio
 async def test_admin_ping(client:TestClient):
-    response = client.get("/api/v1/ping")
+    response = client.get(f"{API_VERSION}/ping")
     assert response.status_code == 401
 
 @pytest.mark.asyncio
 async def test_admin_ping_pass(client:TestClient):
     token = get_token(client)
-    response = client.get("/api/v1/ping", headers={"Authorization": token})
+    response = client.get(
+        f"{API_VERSION}/ping", headers={"Authorization": token})
     assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_post_product(session:Session, client:TestClient):
+async def test_post_category(client:TestClient):
+    category = {"name": "test_category"}
+    # unauthorized
+    response = client.post(f"{API_VERSION}/category", json=category)
+    assert response.status_code == 401
+    token = get_token(client)
+    # success
+    response = client.post(
+        f"{API_VERSION}/category",
+        headers={"Authorization": token}, json=category)
+    assert response.status_code == 200
+    # value error
+    response = client.post(
+        f"{API_VERSION}/category",
+        headers={"Authorization": token}, json=category)
+    assert response.status_code == 400
+
+@pytest.mark.asyncio
+async def test_get_categories(session:Session, client:TestClient):
+    # category = {"name": "test_category"}
+    response = client.get(f"{API_VERSION}/category", params={'_id': 1})
+    assert response.status_code == 404
+    session.add(Category(name="test_category", id=1))
+    response = client.get(f"{API_VERSION}/category", params={'_id': 1})
+    assert response.status_code == 200
+    response = client.get(f"{API_VERSION}/category/list")
+    assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_product(session:Session, client:TestClient):
+    def test_gets(_id:str, name:str, code:int):
+        response = client.get(f"{API_VERSION}/product", params={'_id': _id})
+        assert response.status_code == code
+        response = client.get(
+            f"{API_VERSION}/product/name", params={"name": name})
+        assert response.status_code == code
+    test_gets(1, "test_product", 404)
     product = {
             "name": "test_product",
             "description": "test_description",
@@ -82,23 +120,50 @@ async def test_post_product(session:Session, client:TestClient):
                 }]}
     # unauthorized
     response = client.post(
-        "/api/v1/product",
+        f"{API_VERSION}/product",
         json=product)
     assert response.status_code == 401
-    token = get_token(client)
+    headers = {"Authorization": get_token(client)}
     # no category
     response = client.post(
-        "/api/v1/product",
-        headers={"Authorization": token},
+        f"{API_VERSION}/product",
+        headers=headers,
         json=product)
     assert response.status_code == 400
     # success
-    data = response.json()
     session.add(Category(name="test_category", id=1))
     session.commit()
     response = client.post(
-        "/api/v1/product",
-        headers={"Authorization": token},
+        f"{API_VERSION}/product",
+        headers=headers,
         json=product)
     assert response.status_code == 200
-
+    data = response.json()
+    # success get
+    test_gets(data["id"], "test_product", 200)
+    # update product
+    response = client.put(
+        f"{API_VERSION}/product",
+        headers=headers,
+        params={"_id": 3},
+        json={ "name": "changed_product" })
+    assert response.status_code == 404
+    # update product
+    response = client.put(
+        f"{API_VERSION}/product",
+        headers=headers,
+        params={"_id": data["id"]},
+        json={ "name": "changed_product" })
+    assert response.status_code == 200
+    # delete product
+    response = client.delete(
+        f"{API_VERSION}/product",
+        headers=headers,
+        params={"_id": data["id"]})
+    assert response.status_code == 200
+    # delete product
+    response = client.delete(
+        f"{API_VERSION}/product",
+        headers=headers,
+        params={"_id": data["id"]})
+    assert response.status_code == 404
