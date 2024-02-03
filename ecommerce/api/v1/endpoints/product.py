@@ -14,7 +14,7 @@ from ecommerce.db import (
     update_product,
     delete_product)
 from ecommerce.schemas.product import (
-    ProductReadWithAttributes, ProductCreate, ProductUpdate, ProductAttributeCreate)
+    ProductReadWithAttributes, ProductCreate, ProductUpdate)
 from ecommerce.api.v1.dependencies import get_current_active_user
 
 logger = logging.getLogger("uvicorn")
@@ -39,30 +39,28 @@ async def post_product(*,
 async def get_product(*,
     _id:int, session:Session=Depends(db_client.get_session)):
     """creates category from defined schema. Admin only"""
-    try:
-        category = await get_product_by_id(session, _id)
-        return category
-    except LookupError as e:
+    product = await get_product_by_id(session, _id)
+    if not product:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)) from e
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f'product {_id} not found')
+    return product
 
 @router.get("/product/name", response_model=ProductReadWithAttributes)
 async def get_product_by_name_endpoint(*,
     name:str, session:Session=Depends(db_client.get_session)):
     """creates category from defined schema. Admin only"""
-    try:
-        product = await get_product_by_name(session, name)
-        return product
-    except LookupError as e:
+    product = await get_product_by_name(session, name)
+    if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)) from e
+            detail=f'product {name} not found')
+    return product
 
 @router.put("/product", response_model=ProductReadWithAttributes)
 async def put_product(*,
     _token: Annotated[str, Depends(get_current_active_user)],
-    _id:str, product: ProductUpdate, 
+    _id:str, product: ProductUpdate,
     session:Session=Depends(db_client.get_session)):
     """creates category from defined schema. Admin only"""
     try:

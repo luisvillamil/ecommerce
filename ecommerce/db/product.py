@@ -8,12 +8,10 @@ from sqlmodel import select, Session, or_
 
 # internal libraries
 from ecommerce.schemas import (
-    Category,
     Product,
     ProductCreate,
     ProductUpdate,
-    ProductAttribute,
-    ProductAttributeCreate)
+    Attribute)
 from .category import get_category_by_id
 
 
@@ -38,7 +36,7 @@ async def create_product(
     )
     if product.attributes:
         new_product.attributes = [
-                ProductAttribute(
+                Attribute(
                     name = attribute.name,
                     product = new_product
                 ) for attribute in product.attributes
@@ -50,6 +48,12 @@ async def create_product(
     return new_product
 
 async def get_product_by_id(session:Session, _id:int):
+    """Returns product if found, else None
+
+    Args:
+        session (Session): database session
+        _id (int): primary key of product
+    """
     return session.get(Product, {"id": _id})
 
 async def get_products(session:Session, offset:int, limit:int):
@@ -59,6 +63,12 @@ async def get_products(session:Session, offset:int, limit:int):
     return categories
 
 async def get_product_by_name(session:Session, name:str):
+    """Returns product if found, else None
+
+    Args:
+        session (Session): database session
+        _id (int): primary key of product
+    """
     stmt = select(Product).where(Product.name == name)
     return session.exec(stmt).one_or_none()
 
