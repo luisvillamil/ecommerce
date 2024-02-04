@@ -3,7 +3,7 @@ from typing import Annotated, Optional, List
 import logging
 
 # external libraries
-from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException, status, Query
 from sqlmodel import Session
 # internal libraries
 from ecommerce.db import (
@@ -11,18 +11,22 @@ from ecommerce.db import (
     create_product,
     get_product_by_id,
     get_product_by_name,
+    get_products,
     update_product,
     delete_product)
 from ecommerce.schemas.product import (
-    ProductReadWithAttributes, ProductCreate, ProductUpdate)
-from ecommerce.api.v1.dependencies import get_current_active_user
+    ProductReadWithItems,
+    ProductReadWithAttributes,
+    ProductCreate,
+    ProductUpdate)
+from ecommerce.api.v1.dependencies import get_current_admin_user
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
 
 @router.post("/product", response_model=ProductReadWithAttributes)
 async def post_product(*,
-    _token: Annotated[str, Depends(get_current_active_user)],
+    _token: Annotated[str, Depends(get_current_admin_user)],
     session:Session=Depends(db_client.get_session),
     new_product:ProductCreate):
     """creates category from defined schema. Admin only"""
@@ -59,7 +63,7 @@ async def get_product_by_name_endpoint(*,
 
 @router.put("/product", response_model=ProductReadWithAttributes)
 async def put_product(*,
-    _token: Annotated[str, Depends(get_current_active_user)],
+    _token: Annotated[str, Depends(get_current_admin_user)],
     _id:str, product: ProductUpdate,
     session:Session=Depends(db_client.get_session)):
     """creates category from defined schema. Admin only"""
@@ -73,7 +77,7 @@ async def put_product(*,
 
 @router.delete("/product")
 async def delete_product_endpoint(*,
-    _token: Annotated[str, Depends(get_current_active_user)],
+    _token: Annotated[str, Depends(get_current_admin_user)],
     _id:str, session:Session=Depends(db_client.get_session)):
     """creates category from defined schema. Admin only"""
     try:
@@ -83,3 +87,17 @@ async def delete_product_endpoint(*,
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e)) from e
+
+@router.get("/product/list", response_model=List[ProductReadWithItems])
+async def get_product_list(
+    session:Session=Depends(db_client.get_session),
+    offset: int = 0,
+    limit: int = Query(default=100, le=100)):
+    """Gets list of products with items
+
+    Args:
+        offset (int, optional): page offset. Defaults to 0.
+        limit (int, optional): number of products per page. Defaults to Query(default=100, le=100).
+    """
+    products = await get_products(session, offset, limit)
+    return products

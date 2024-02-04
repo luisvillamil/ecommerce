@@ -39,7 +39,8 @@ class CategoryBase(SQLModel):
 class Category(CategoryBase, table = True):
     """Main Table model for Category"""
     id: Optional[int] = Field(default=None, primary_key=True)
-    products: List["Product"] = Relationship(back_populates="category")
+    products: List["Product"] = Relationship(
+        back_populates="category", sa_relationship_kwargs={'cascade': 'all, delete'})
 
 # Products
 class ProductBase(SQLModel):
@@ -53,8 +54,10 @@ class Product(ProductBase, table=True):
     """Main table model for Product"""
     id: Optional[int] = Field(primary_key=True)
     category: Optional[Category] = Relationship(back_populates="products")
-    product_items: List["Item"] = Relationship(back_populates="product")
-    attributes: List["Attribute"] = Relationship(back_populates="product")
+    product_items: List["Item"] = Relationship(
+        back_populates="product", sa_relationship_kwargs={'cascade': 'all, delete'})
+    attributes: List["Attribute"] = Relationship(
+        back_populates="product", sa_relationship_kwargs={'cascade': 'all, delete'})
 
 # Product Attributes
 class AttributeBase(SQLModel):
@@ -115,7 +118,8 @@ class Item(ItemBase, table=True):
     """Item table"""
     id: int = Field(primary_key=True)
     product: "Product" = Relationship(back_populates="product_items")
-    attribute_values: List["AttributeValue"] = Relationship(back_populates="item")
+    attribute_values: List["AttributeValue"] = Relationship(
+        back_populates="item", sa_relationship_kwargs={'cascade': 'all, delete'})
 
 # pydantic models
 
@@ -147,6 +151,7 @@ class ProductUpdate(SQLModel):
 
 class AttributeRead(AttributeBase):
     """Product Attribute Read model"""
+    id: int
 
 class AttributeValueCreate(AttributeValueBase):
     """AttributeValue Create Model"""

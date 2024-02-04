@@ -13,6 +13,7 @@ __all__ = (
     "create_category",
     "get_category_by_id",
     "get_categories",
+    "delete_category",
 )
 
 async def create_category(session:Session, category:CategoryCreate):
@@ -23,6 +24,7 @@ async def create_category(session:Session, category:CategoryCreate):
     try:
         session.commit()
     except IntegrityError as e:
+        session.rollback()
         raise ValueError("Category name or code already exists") from e
     session.refresh(new_category)
     return new_category
@@ -45,9 +47,14 @@ async def get_categories(session:Session, offset:int, limit:int):
         select(Category).offset(offset).limit(limit)).all()
     return categories
 
-async def delete_product(session:Session, _id:int):
+async def delete_category(session:Session, _id:int):
+    """deletes category by _id. if not found raises LookupError
+        should cascade all deletes to products
+
+    Args:
+        session (Session): database session
+        _id (int): id of category
+    """
     category = await get_category_by_id(session, _id)
-    if not category:
-        raise LookupError(f"category {_id} not found.")
     session.delete(category)
     session.commit()

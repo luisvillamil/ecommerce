@@ -14,7 +14,9 @@ from ecommerce.db import db_client, authenticate_user
 from ecommerce.schemas.user import User, UserRead
 from ecommerce.schemas.token import Token
 from ecommerce.core.security import create_access_token
-from ecommerce.api.v1.dependencies import get_current_active_user
+from ecommerce.api.v1.dependencies import (
+    get_current_active_user,
+    get_current_admin_user)
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
@@ -37,7 +39,7 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/ping")
-async def read_sub(_token: Annotated[str, Depends(get_current_active_user)]):
+async def read_sub(_token: Annotated[str, Depends(get_current_admin_user)]):
     return {"message": "Hello World from admin"}
 
 @router.get("/users/me/", response_model=UserRead)

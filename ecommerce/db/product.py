@@ -73,6 +73,16 @@ async def get_product_by_name(session:Session, name:str):
     return session.exec(stmt).one_or_none()
 
 async def update_product(session:Session, _id:int, product:ProductUpdate):
+    """Updates the product specific fields
+
+    Args:
+        session (Session): database session
+        _id (int): product id
+        product (ProductUpdate): fields to change from the product
+
+    Raises:
+        LookupError: if product is not found
+    """
     db_product = await get_product_by_id(session, _id)
     if not db_product:
         raise LookupError(f"product {_id} not found.")
@@ -85,6 +95,15 @@ async def update_product(session:Session, _id:int, product:ProductUpdate):
     return db_product
 
 async def delete_product(session:Session, _id:int):
+    """Deletes product from database
+
+    Args:
+        session (Session): database session
+        _id (int): id of product
+
+    Raises:
+        LookupError: if product not found
+    """
     product = await get_product_by_id(session, _id)
     if not product:
         raise LookupError(f"product {_id} not found.")
