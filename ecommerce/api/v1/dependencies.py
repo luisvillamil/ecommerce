@@ -74,6 +74,13 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+async def get_current_admin_user(
+    current_user: Annotated[User, Depends(get_current_active_user)]):
+    """Checks wether user is admin"""
+    if not current_user.admin:
+        raise HTTPException(status_code=400, detail="Wrong user")
+    return current_user
+
 # def get_current_user(
 #     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 # ) -> models.User:

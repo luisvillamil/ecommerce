@@ -6,7 +6,6 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 from ecommerce.db import db_client
 from ecommerce.main import app
-from ecommerce.api.v1.dependencies import get_current_active_user
 from ecommerce.schemas import User, Category
 from ecommerce.config import settings
 from ecommerce.core.security import get_password_hash
@@ -72,7 +71,7 @@ async def test_admin_ping_pass(client:TestClient):
     assert response.status_code == 200
 
 @pytest.mark.asyncio
-async def test_post_category(client:TestClient):
+async def test_category(client:TestClient):
     category = {"name": "test_category"}
     # unauthorized
     response = client.post(f"{API_VERSION}/category", json=category)
@@ -83,11 +82,22 @@ async def test_post_category(client:TestClient):
         f"{API_VERSION}/category",
         headers={"Authorization": token}, json=category)
     assert response.status_code == 200
+    data = response.json()
     # value error
     response = client.post(
         f"{API_VERSION}/category",
         headers={"Authorization": token}, json=category)
     assert response.status_code == 400
+    # delete category
+    response = client.delete(
+        f"{API_VERSION}/category",
+        params={"_id": data["id"]})
+    assert response.status_code == 200
+    # delete category
+    response = client.delete(
+        f"{API_VERSION}/category",
+        params={"_id": data["id"]})
+    assert response.status_code == 404
 
 @pytest.mark.asyncio
 async def test_get_categories(session:Session, client:TestClient):
@@ -114,7 +124,7 @@ async def test_product(session:Session, client:TestClient):
             "description": "test_description",
             "image_url": "http://localhost/hello.jpg",
             "category_id": 1,
-            "product_attributes": [
+            "attributes": [
                 {
                     "name": "test_attribute"
                 }]}
@@ -167,3 +177,7 @@ async def test_product(session:Session, client:TestClient):
         headers=headers,
         params={"_id": data["id"]})
     assert response.status_code == 404
+    # get product list
+    response = client.get(
+        f"{API_VERSION}/product/list")
+    assert response.status_code == 200
