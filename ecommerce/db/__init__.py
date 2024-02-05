@@ -11,6 +11,7 @@ from ecommerce.config import settings
 from ecommerce.db.user import *
 from ecommerce.db.category import *
 from ecommerce.db.product import *
+from ecommerce.db.item import *
 
 # constants
 logger = logging.getLogger("uvicorn")
