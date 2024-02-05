@@ -6,11 +6,11 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 from ecommerce.db import db_client
 from ecommerce.main import app
-from ecommerce.schemas import User, Category
+from ecommerce.schemas import User, Category, Product, Attribute
 from ecommerce.config import settings
 from ecommerce.core.security import get_password_hash
 
-API_VERSION = "/api/v1"
+API_VERSION = settings.API_VERSION
 
 @pytest.fixture(name="session")
 def session_fixture():
@@ -42,11 +42,6 @@ def client_fixture(session):
     app.dependency_overrides[db_client.get_session] = get_session_override
     yield client
     app.dependency_overrides.clear()
-
-# def test_token():
-#     response = client.post(
-#         "/login/token"
-#     )
 
 def get_token(client:TestClient):
     response = client.post(f"{API_VERSION}/token", data={
@@ -181,3 +176,62 @@ async def test_product(session:Session, client:TestClient):
     response = client.get(
         f"{API_VERSION}/product/list")
     assert response.status_code == 200
+
+@pytest.mark.asyncio
+async def test_items(session:Session, client:TestClient):
+    item = {
+        "name": "test_item",
+        "stock_quantity": 123,
+        "product_id": 1,
+        "image_url": "string",
+        "price": 12,
+        "attribute_values": [
+            {
+            "value": "test_value",
+            "attribute_id": 1
+            }
+        ]
+    }
+    response = client.get(
+        f"{API_VERSION}/item", params={"_id": 1})
+    assert response.status_code == 404
+    response = client.post(f"{API_VERSION}/item", json = item)
+    assert response.status_code == 401
+    headers = {"Authorization": get_token(client)}
+    response = client.post(
+        f"{API_VERSION}/item", headers = headers, json = item)
+    assert response.status_code == 400
+    cat = Category(name="test_category", id=1)
+    product = Product(name="test_product", description="", image_url="",
+                      category=cat, id=1)
+    attribute = Attribute(name="test", id=1, product=product)
+    product.attributes.append(attribute)
+    session.add_all([cat, product, attribute])
+    # success
+    response = client.post(
+        f"{API_VERSION}/item", headers = headers, json = item)
+    assert response.status_code == 200
+    data = response.json()
+    response = client.get(
+        f"{API_VERSION}/item", params={"_id": data["id"]})
+    assert response.status_code == 200
+    response = client.put(
+        f"{API_VERSION}/item", params={"_id": data["id"]},
+        headers=headers,
+        json= {"name": "new_name"})
+    assert response.status_code == 200
+    response = client.delete(
+        f"{API_VERSION}/item", headers=headers, params={"_id": data["id"]})
+    assert response.status_code == 200
+    response = client.delete(
+        f"{API_VERSION}/item", headers=headers, params={"_id": data["id"]})
+    assert response.status_code == 404
+    response = client.put(
+        f"{API_VERSION}/item", params={"_id": data["id"]},
+        headers=headers,
+        json= {"name": "new_name"})
+    assert response.status_code == 404
+    response = client.get(
+        f"{API_VERSION}/item/list")
+    assert response.status_code == 200
+    assert response.json() == []

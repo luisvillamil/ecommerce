@@ -1,10 +1,9 @@
 #!/bin/python
+"""Product database functions"""
 
 # base libraries
-from uuid import UUID
-from typing import Optional, List
 # external libraries
-from sqlmodel import select, Session, or_
+from sqlmodel import select, Session
 
 # internal libraries
 from ecommerce.schemas import (
@@ -27,6 +26,7 @@ __all__ = (
 
 async def create_product(
     session:Session, product:ProductCreate):
+    """Creates Product in database"""
     category = await get_category_by_id(session, product.category_id)
     new_product = Product(
         name = product.name,

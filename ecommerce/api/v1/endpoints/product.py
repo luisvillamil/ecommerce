@@ -6,15 +6,8 @@ import logging
 from fastapi import Depends, APIRouter, HTTPException, status, Query
 from sqlmodel import Session
 # internal libraries
-from ecommerce.db import (
-    db_client,
-    create_product,
-    get_product_by_id,
-    get_product_by_name,
-    get_products,
-    update_product,
-    delete_product)
-from ecommerce.schemas.product import (
+from ecommerce import db
+from ecommerce.schemas import (
     ProductReadWithItems,
     ProductReadWithAttributes,
     ProductCreate,
@@ -27,12 +20,12 @@ router = APIRouter()
 @router.post("/product", response_model=ProductReadWithAttributes)
 async def post_product(*,
     _token: Annotated[str, Depends(get_current_admin_user)],
-    session:Session=Depends(db_client.get_session),
+    session:Session=Depends(db.db_client.get_session),
     new_product:ProductCreate):
     """creates category from defined schema. Admin only"""
     # print(new_product, product_attributes)
     try:
-        category = await create_product(session, new_product)
+        category = await db.create_product(session, new_product)
         return category
     except (ValueError, LookupError) as e:
         raise HTTPException(
@@ -41,9 +34,9 @@ async def post_product(*,
 
 @router.get("/product", response_model=ProductReadWithAttributes)
 async def get_product(*,
-    _id:int, session:Session=Depends(db_client.get_session)):
+    _id:int, session:Session=Depends(db.db_client.get_session)):
     """creates category from defined schema. Admin only"""
-    product = await get_product_by_id(session, _id)
+    product = await db.get_product_by_id(session, _id)
     if not product:
         raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -51,10 +44,10 @@ async def get_product(*,
     return product
 
 @router.get("/product/name", response_model=ProductReadWithAttributes)
-async def get_product_by_name_endpoint(*,
-    name:str, session:Session=Depends(db_client.get_session)):
+async def get_product_by_name(*,
+    name:str, session:Session=Depends(db.db_client.get_session)):
     """creates category from defined schema. Admin only"""
-    product = await get_product_by_name(session, name)
+    product = await db.get_product_by_name(session, name)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -65,10 +58,10 @@ async def get_product_by_name_endpoint(*,
 async def put_product(*,
     _token: Annotated[str, Depends(get_current_admin_user)],
     _id:str, product: ProductUpdate,
-    session:Session=Depends(db_client.get_session)):
+    session:Session=Depends(db.db_client.get_session)):
     """creates category from defined schema. Admin only"""
     try:
-        product = await update_product(session, _id, product)
+        product = await db.update_product(session, _id, product)
         return product
     except LookupError as e:
         raise HTTPException(
@@ -76,12 +69,12 @@ async def put_product(*,
             detail=str(e)) from e
 
 @router.delete("/product")
-async def delete_product_endpoint(*,
+async def delete_product(*,
     _token: Annotated[str, Depends(get_current_admin_user)],
-    _id:str, session:Session=Depends(db_client.get_session)):
+    _id:str, session:Session=Depends(db.db_client.get_session)):
     """creates category from defined schema. Admin only"""
     try:
-        await delete_product(session, _id)
+        await db.delete_product(session, _id)
         return {"ok": True}
     except LookupError as e:
         raise HTTPException(
@@ -90,7 +83,7 @@ async def delete_product_endpoint(*,
 
 @router.get("/product/list", response_model=List[ProductReadWithItems])
 async def get_product_list(
-    session:Session=Depends(db_client.get_session),
+    session:Session=Depends(db.db_client.get_session),
     offset: int = 0,
     limit: int = Query(default=100, le=100)):
     """Gets list of products with items
@@ -99,5 +92,5 @@ async def get_product_list(
         offset (int, optional): page offset. Defaults to 0.
         limit (int, optional): number of products per page. Defaults to Query(default=100, le=100).
     """
-    products = await get_products(session, offset, limit)
+    products = await db.get_products(session, offset, limit)
     return products
