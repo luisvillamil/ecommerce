@@ -6,15 +6,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from starlette.middleware.cors import CORSMiddleware
 
 from ecommerce.config import settings
 from ecommerce import db
-from ecommerce.api.v1 import api_router
+from ecommerce.api import v1
 # from app.core.config import settings
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Determines what will happen during the lifespan of app
 
     Args:
@@ -35,13 +34,13 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
-# if settings.BACKEND_CORS_ORIGINS:
-#     app.add_middleware(
-#         CORSMiddleware,
-#         allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-#         allow_credentials=True,
-#         allow_methods=["*"],
-#         allow_headers=["*"],
-#     )
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-app.include_router(api_router, prefix=settings.API_VERSION)
+app.include_router(v1.api_router, prefix=settings.API_VERSION)

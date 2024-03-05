@@ -117,7 +117,6 @@ async def test_product(session:Session, client:TestClient):
     product = {
             "name": "test_product",
             "description": "test_description",
-            "image_url": "http://localhost/hello.jpg",
             "category_id": 1,
             "attributes": [
                 {
@@ -183,7 +182,6 @@ async def test_items(session:Session, client:TestClient):
         "name": "test_item",
         "stock_quantity": 123,
         "product_id": 1,
-        "image_url": "string",
         "price": 12,
         "attribute_values": [
             {

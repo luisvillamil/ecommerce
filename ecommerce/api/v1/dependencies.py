@@ -14,7 +14,6 @@ from sqlmodel import Session
 from ecommerce.core import security
 from ecommerce.config import settings
 from ecommerce.db import db_client, get_user_by_username
-from ecommerce.db.user import get_user_by_username
 from ecommerce.schemas.user import User
 from ecommerce.schemas.token import TokenData
 # from app.db.session import SessionLocal

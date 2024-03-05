@@ -31,7 +31,6 @@ async def create_product(
     new_product = Product(
         name = product.name,
         description= product.description,
-        image_url = product.image_url,
         category = category
     )
     if product.attributes:

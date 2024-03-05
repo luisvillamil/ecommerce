@@ -42,7 +42,6 @@ async def create_item(session:Session, item:ItemCreate):
     new_item = Item(
         name=item.name,
         stock_quantity=item.stock_quantity,
-        image_url=item.image_url,
         price=item.price,
         product=product)
     session.add(new_item)

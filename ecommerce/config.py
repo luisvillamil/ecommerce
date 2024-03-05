@@ -106,6 +106,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr = "test@example.com"
     FIRST_SUPERUSER_PASSWORD: str = "test123"
     # USERS_OPEN_REGISTRATION: bool = False
+    FILE_BACKEND: str = "local"
+    FILE_DIRECTORY: str = "./.file_db"
     model_config = SettingsConfigDict(case_sensitive=True)
 
 
