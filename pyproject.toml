@@ -12,7 +12,7 @@ fastapi = "^0.109.0"
 asyncpg = "^0.27.0"
 greenlet = "^2.0.2"
 uvicorn = "^0.22.0"
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.7"
 pydantic = {version = "*", extras = ["email"]}
 pydantic-settings = "*"
 python-jose = {version = "*", extras = ["cryptography"]}
