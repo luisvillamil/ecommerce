@@ -55,7 +55,6 @@ class DbClient:
 
     async def cleanup(self):
         """Ensure transactions finish"""
-        pass
 
 db_client = DbClient(
     echo = True if settings.DEBUG else False)

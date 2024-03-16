@@ -2,8 +2,7 @@
 name = "ecommerce"
 version = "0.3.0"
 description = ""
-authors = ["Luis Villamil <lmv13@my.fsu.edu>"]
-readme = "README.md"
+authors = ["Luis Villamil <luismiguelvillamil95@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
