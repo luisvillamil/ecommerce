@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ecommerce.config import settings
 from ecommerce import db
-from ecommerce.api import v1
+from ecommerce import api
 # from app.core.config import settings
 
 @asynccontextmanager
@@ -43,4 +43,4 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(v1.api_router, prefix=settings.API_VERSION)
+app.include_router(api.api_router, prefix=settings.API_VERSION)

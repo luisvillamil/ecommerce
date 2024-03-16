@@ -28,7 +28,6 @@ class User(UserBase, table=True):
 class UserCreate(UserBase):
     """Model to create user."""
     password: str
-    admin: bool | None = None
 
 class UserRead(UserBase):
     """Model to read user"""

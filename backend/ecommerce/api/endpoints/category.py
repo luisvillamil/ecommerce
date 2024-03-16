@@ -15,7 +15,7 @@ from ecommerce.db import (
     delete_category)
 from ecommerce.schemas.product import (
     CategoryRead, CategoryCreate, CategoryReadWithProducts)
-from ecommerce.api.v1.dependencies import get_current_admin_user
+from ecommerce.api.dependencies import get_current_admin_user
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()

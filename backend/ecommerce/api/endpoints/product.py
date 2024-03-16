@@ -19,7 +19,7 @@ from ecommerce.schemas import (
     ProductReadWithAttributes,
     ProductCreate,
     ProductUpdate)
-from ecommerce.api.v1.dependencies import get_current_admin_user
+from ecommerce.api.dependencies import get_current_admin_user
 from ecommerce.worker.tasks import upload_image
 
 logger = logging.getLogger("uvicorn")

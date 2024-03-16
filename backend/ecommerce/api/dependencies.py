@@ -4,7 +4,7 @@ from typing import Generator, Annotated
 
 # external libraries
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt, JWTError
 from pydantic import ValidationError
 from sqlmodel import Session

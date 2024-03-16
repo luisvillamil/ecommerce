@@ -14,7 +14,7 @@ from ecommerce.db import db_client, authenticate_user
 from ecommerce.schemas.user import User, UserRead
 from ecommerce.schemas.token import Token
 from ecommerce.core.security import create_access_token
-from ecommerce.api.v1.dependencies import (
+from ecommerce.api.dependencies import (
     get_current_active_user,
     get_current_admin_user)
 

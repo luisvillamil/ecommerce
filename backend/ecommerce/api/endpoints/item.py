@@ -10,7 +10,7 @@ from sqlmodel import Session
 # internal libraries
 from ecommerce import db
 from ecommerce.schemas import ItemCreate, ItemRead, ItemUpdate
-from ecommerce.api.v1.dependencies import get_current_admin_user
+from ecommerce.api.dependencies import get_current_admin_user
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
