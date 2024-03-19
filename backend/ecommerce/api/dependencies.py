@@ -8,32 +8,20 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt, JWTError
 from pydantic import ValidationError
 from sqlmodel import Session
-# from sqlalchemy.orm import Session
-
-# from app import crud, models, schemas
 from ecommerce.core import security
 from ecommerce.config import settings
 from ecommerce.db import db_client, get_user_by_username
 from ecommerce.schemas.user import User
 from ecommerce.schemas.token import TokenData
-# from app.db.session import SessionLocal
 
 logger = logging.getLogger("uvicorn")
-# def get_db() -> Generator:
-#     try:
-#         db = SessionLocal()
-#         yield db
-#     finally:
-#         db.close()
 
-# def fake_hash_password(password: str):
-#     return "fakehashed" + password
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl = f"{settings.API_VERSION}/token")
-
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl = f"{settings.API_VERSION}/token")
+TokenDep = Annotated[str, Depends(oauth2_scheme)]
 
 async def get_current_user(
-        token: Annotated[str, Depends(oauth2_scheme)],
+        token: TokenDep,
         session: Annotated[Session, Depends(db_client.get_session)]):
     """Uses Oauth2 schema to get user model
 

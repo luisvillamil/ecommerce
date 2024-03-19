@@ -5,6 +5,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from fastapi.middleware.cors import CORSMiddleware
 
 from ecommerce.config import settings
@@ -25,12 +26,14 @@ async def lifespan(_app: FastAPI):
     # cleanup
     await db.db_client.cleanup()
 
-
+def custom_generate_unique_id(route: APIRoute):
+    return f"{route.tags[0]}-{route.name}"
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     lifespan=lifespan,
-    openapi_url = None if settings.PRODUCTION is True else f"{settings.API_VERSION}/openapi.json"
+    openapi_url = None if settings.PRODUCTION is True else f"{settings.API_VERSION}/openapi.json",
+    generate_unique_id_function=custom_generate_unique_id
 )
 
 # Set all CORS enabled origins

@@ -21,8 +21,9 @@ from ecommerce.api.dependencies import (
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
 
+
 @router.post("/token", response_model=Token)
-async def login_for_access_token(
+async def get_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[Session, Depends(db_client.get_session)]):
     user = await authenticate_user(session, form_data.username, form_data.password)

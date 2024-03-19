@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     PRODUCTION: bool = False
     DEBUG: bool = False
     # secrets.token_urlsafe(32)
-    SECRET_KEY: str = 'a3293d8b8ee0bfd4a67f99807c70e6292eb1f9af7fcb215218d4f9ebed72aadf'
+    SECRET_KEY: str = ''
     ALGORITHM:str = "HS256"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
