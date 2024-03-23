@@ -40,10 +40,5 @@ async def get_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/ping")
-async def read_sub(_token: Annotated[str, Depends(get_current_admin_user)]):
-    return {"message": "Hello World from admin"}
-
-@router.get("/users/me/", response_model=UserRead)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)]):
-    return current_user
+async def read_sub():
+    return "pong"

@@ -10,6 +10,7 @@ from sqlmodel import Session
 # internal libraries
 from ecommerce.db import db_client, create_user, get_user_by_id
 from ecommerce.schemas.user import User, UserCreate, UserRead
+from ecommerce.api.dependencies import get_current_active_user
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
@@ -38,3 +39,8 @@ async def update_user_endpoint(_id:str, **kwargs):
 @router.delete("/user")
 async def delete_user_endpoint(_id:str):
     pass
+
+@router.get("/users/me/", response_model=UserRead)
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_active_user)]):
+    return current_user

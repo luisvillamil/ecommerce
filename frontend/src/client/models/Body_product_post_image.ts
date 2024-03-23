@@ -1,0 +1,8 @@
+/* generated using openapi-typescript-codegen -- do no edit */
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+export type Body_product_post_image = {
+    file: Blob;
+};
+
