@@ -5,6 +5,12 @@ Ecommerce Basic app
 I'll use https://mkdocstrings.github.io/usage/#result
 with https://squidfunk.github.io/mkdocs-material/
 
+## Requirements
+- python 3.11
+- [poetry]([url](https://python-poetry.org/))
+- bun
+- docker
+
 ## setup
 ```
 cd backend
