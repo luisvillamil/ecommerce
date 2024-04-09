@@ -2,9 +2,9 @@ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 
 import { useAuth } from '../../auth'
 
-export const Route = createFileRoute('/admin/dashboard')({
+export const Route = createFileRoute('/_admin/dashboard')({
   beforeLoad: ({ context, location }) => {
-    if (!context.auth.isAuthenticated()) {
+    if (!context.auth.isAuthenticated) {
       throw redirect({
         to: '/login',
         search: {

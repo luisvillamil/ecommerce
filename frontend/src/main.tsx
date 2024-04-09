@@ -9,15 +9,19 @@ import { OpenAPI } from './client'
 import './index.css'
 
 OpenAPI.BASE = "http://localhost:8000"
+OpenAPI.TOKEN = async () => {
+  return localStorage.getItem('access_token') || ''
+}
 const queryClient =  new QueryClient()
 
 const router = createRouter({
   routeTree,
-  defaultPreload: 'intent',
+  // defaultPreload: 'intent',
   context: {
     auth: undefined!, // This will be set after we wrap the app in an AuthProvider
   }
 })
+
 declare module '@tanstack/react-router' {
   interface Register {
     // This infers the type of our router and registers it across your entire project

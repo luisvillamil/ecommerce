@@ -1,6 +1,11 @@
 import React, { Suspense } from 'react'
-import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router'
-import { useAuth, type AuthContext } from '../auth'
+import { 
+  createRootRouteWithContext,
+  ErrorComponent,
+  Outlet } from '@tanstack/react-router'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { type AuthContext } from '../auth'
+// import NavBar from '../components/NavBar'
 
 interface MyRouterContext {
   auth: AuthContext
@@ -16,46 +21,19 @@ const TanStackRouteDevtools =
     )
 
 export const Route = createRootRouteWithContext<MyRouterContext>()
-  ({ component: RootComponent,})
+  ({ component: RootComponent,
+    errorComponent: ({error}) => {
+      return <ErrorComponent error={error} />
+    }})
 
 
 function RootComponent() {
-  const auth = useAuth()
   return (
     <>
-      <div className='p-2 flex gap-2 text-lg'>
-        <Link
-          to="/"
-          activeProps={{
-            className: 'font-bold',
-          }}
-          activeOptions={{ exact: true }}
-        >
-          Home
-        </Link>{' '}
-        {auth.isAuthenticated() ? (
-          <Link
-            to={'/admin/dashboard'}
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Dashboard
-          </Link>
-        ) : (
-          <Link
-            to={'/login'}
-            activeProps={{
-              className: 'font-bold',
-            }}
-            search={{ redirect: '/' }}
-          >
-            Login
-          </Link>
-        )}
-      </div>
+      {/* <NavBar/> */}
       <Outlet />
       <Suspense>
+        <ReactQueryDevtools buttonPosition="top-right" />
         <TanStackRouteDevtools position='bottom-right' />
       </Suspense>
     </>

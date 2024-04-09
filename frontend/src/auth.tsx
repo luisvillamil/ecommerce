@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { useQuery } from '@tanstack/react-query'
-
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import {
   LoginService,
   UserService,
@@ -13,23 +12,24 @@ export interface AuthContext {
   user: UserRead | null | undefined
   login: (data: AccessToken) =>Promise<void>
   logout: () => void
-  isAuthenticated: () => boolean
+  isAuthenticated: boolean
 }
 
 const AuthContext = React.createContext<AuthContext | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  
-  const isAuthenticated = () => {
-    console.log("access_token:", localStorage.getItem('access_token'))
-    return !!localStorage.getItem('access_token')
-  }
 
-  const { data: user, isLoading } = useQuery<UserRead | null, Error>({
+  const isAuthenticated = !!localStorage.getItem('access_token')
+
+  const { data: user, isLoading, isError, error } = useQuery<UserRead | null, Error>({
     queryKey: ['users'],
     queryFn: UserService.readUsersMe
+  })
+
+  if (isError) {
+    console.log("error: ", error);
   }
-  )
+  
 
   const login = async (data: AccessToken) => {
     const response = await LoginService.getAccessToken({
@@ -41,8 +41,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('access_token')
   }
+
   return (
-    <AuthContext.Provider value={{ isLoading, user, login, logout, isAuthenticated}}>
+    <AuthContext.Provider value={{ 
+      isLoading, user, login, logout, isAuthenticated}}>
       {children}
     </AuthContext.Provider>
   )
@@ -53,5 +55,6 @@ export function useAuth() {
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
+  // console.log(context)
   return context
 }

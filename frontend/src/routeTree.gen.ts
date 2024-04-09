@@ -12,13 +12,19 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
+import { Route as AdminImport } from './routes/_admin'
 import { Route as IndexImport } from './routes/index'
-import { Route as AdminDashboardImport } from './routes/admin/dashboard'
+import { Route as AdminDashboardImport } from './routes/_admin/dashboard'
 
 // Create/Update Routes
 
 const LoginRoute = LoginImport.update({
   path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AdminRoute = AdminImport.update({
+  id: '/_admin',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -28,8 +34,8 @@ const IndexRoute = IndexImport.update({
 } as any)
 
 const AdminDashboardRoute = AdminDashboardImport.update({
-  path: '/admin/dashboard',
-  getParentRoute: () => rootRoute,
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -40,13 +46,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/_admin': {
+      preLoaderRoute: typeof AdminImport
+      parentRoute: typeof rootRoute
+    }
     '/login': {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/admin/dashboard': {
+    '/_admin/dashboard': {
       preLoaderRoute: typeof AdminDashboardImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof AdminImport
     }
   }
 }
@@ -55,8 +65,8 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  AdminRoute.addChildren([AdminDashboardRoute]),
   LoginRoute,
-  AdminDashboardRoute,
 ])
 
 /* prettier-ignore-end */

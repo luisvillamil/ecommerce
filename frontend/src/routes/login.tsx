@@ -1,10 +1,10 @@
 import * as React from 'react'
-
 import {
   createFileRoute,
   getRouteApi,
   useNavigate,
-  redirect
+  redirect,
+  useRouter
 } from '@tanstack/react-router'
 import { type SubmitHandler, useForm } from "react-hook-form"
 import { z } from 'zod'
@@ -20,22 +20,33 @@ export const Route = createFileRoute("/login")({
     redirect: z.string().catch('/'),
   }),
   component: LoginComponent,
-  beforeLoad: ({context, location}) => {
-    if (context.auth.isAuthenticated()) {
+  beforeLoad: async ({context, location}) => {
+    console.log("login before load: ", context.auth)
+    if (context.auth.isAuthenticated) {
+      console.log("login:", context.auth.user)
       throw redirect({
-        to: '/',
+        to: '/dashboard',
         search: {
           redirect: location.href,
         },
+        replace: true
       })
     }
   },
 })
+//.update({
+//   component: LoginComponent,
+// })
 
 const routeApi = getRouteApi('/login')
 
 function LoginComponent() {
+    // const router = useRouter()
+    // const { auth } = Route.useRouteContext({
+    //   select: ({ auth }) => ({ auth }),
+    // })
     const auth = useAuth()
+    // const auth = useAuth()
     const navigate = useNavigate()
     const [error, setError] = React.useState<string | null>(null)
     const [show, setShow] = React.useState<boolean>(false)
@@ -60,6 +71,10 @@ function LoginComponent() {
   const onSubmit: SubmitHandler<AccessToken> = async (data) => {
     try {
       await auth.login(data)
+      // auth.isAuthenticated = true
+      // router.invalidate()
+      console.log(auth)
+      console.log("redirecting to:", search.redirect)
       navigate({ to: search.redirect })
     } catch (err) {
       const errDetail = (err as ApiError).body.detail
