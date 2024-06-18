@@ -5,9 +5,12 @@ import Login from "./pages/Loging";
 import PrivateRoute from "./components/utils/PrivateRoute";
 import Dashboard from "./pages/Dashboard";
 
+import { CssBaseline } from "@mui/material";
+
 export default function App() {
   return (
     <>
+      <CssBaseline />
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
