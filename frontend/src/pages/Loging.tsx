@@ -17,20 +17,29 @@ import {
 import { LoginService } from ".././client";
 import { Visibility } from "@mui/icons-material";
 import { VisibilityOff } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Login(props) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleLogin = async () => {
-    const response = await LoginService.getAccessToken({
-      formData: {
-        username: username,
-        password: password,
-      },
-    });
-    console.log(response);
+    try {
+      const response = await LoginService.getAccessToken({
+        formData: {
+          username: username,
+          password: password,
+        },
+      });
+      props.setAuth((_auth) => ({ ..._auth, hasAccess: true }));
+      localStorage.setItem("access_token", response.access_token);
+      navigate("/dashboard");
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -55,13 +64,12 @@ export default function Login() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <FormControl variant="outlined">
+          <FormControl variant="outlined" size="small">
             <InputLabel>Password</InputLabel>
             <OutlinedInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               label="Password"
-              size="small"
               type={showPassword ? "text" : "password"}
               endAdornment={
                 <InputAdornment position="end" onClick={() => setShowPassword(!showPassword)}>
