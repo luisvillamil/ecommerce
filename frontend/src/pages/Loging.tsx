@@ -1,20 +1,27 @@
 import React, { useState } from "react";
 import RollingDoodle from "../assets/RollingDoodle.svg";
-import { Box, Button, Container, Link, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  Link,
+  OutlinedInput,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { LoginService } from ".././client";
-
-const classes = {
-  verticalContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-  },
-};
+import { Visibility } from "@mui/icons-material";
+import { VisibilityOff } from "@mui/icons-material";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     const response = await LoginService.getAccessToken({
@@ -24,7 +31,6 @@ export default function Login() {
       },
     });
     console.log(response);
-    // localStorage.setItem('access_token', response.access_token)
   };
 
   return (
@@ -49,14 +55,21 @@ export default function Login() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <TextField
-            size="small"
-            label="Password"
-            type="password"
-            fullWidth
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <FormControl variant="outlined">
+            <InputLabel>Password</InputLabel>
+            <OutlinedInput
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              label="Password"
+              size="small"
+              type={showPassword ? "text" : "password"}
+              endAdornment={
+                <InputAdornment position="end" onClick={() => setShowPassword(!showPassword)}>
+                  <IconButton>{showPassword ? <VisibilityOff /> : <Visibility />}</IconButton>
+                </InputAdornment>
+              }
+            />
+          </FormControl>
         </Stack>
         <Box sx={{ textAlign: "right", mt: 1 }}>
           <Link>Forgot Password?</Link>
