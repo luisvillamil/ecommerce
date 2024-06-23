@@ -3,9 +3,10 @@ import logging
 from typing import Generator, Annotated
 
 # external libraries
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
-from jose import jwt, JWTError
+from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel import Session
 from ecommerce.core import security
@@ -45,14 +46,12 @@ async def get_current_user(
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError as exc:
+    except InvalidTokenError as exc:
         raise credentials_exception from exc
     user = await get_user_by_username(session, username=token_data.username)
     if not user:
         raise credentials_exception
     return user
-
-
 
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]):
@@ -65,41 +64,7 @@ async def get_current_admin_user(
     current_user: Annotated[User, Depends(get_current_active_user)]):
     """Checks wether user is admin"""
     if not current_user.admin:
-        raise HTTPException(status_code=400, detail="Wrong user")
+        raise HTTPException(
+            status_code=403, detail="The user doesn't have enough privileges"
+        )
     return current_user
-
-# def get_current_user(
-#     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
-# ) -> models.User:
-#     try:
-#         payload = jwt.decode(
-#             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
-#         )
-#         token_data = schemas.TokenPayload(**payload)
-#     except (jwt.JWTError, ValidationError):
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Could not validate credentials",
-#         )
-#     user = crud.user.get(db, id=token_data.sub)
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return user
-
-
-# def get_current_active_user(
-#     current_user: models.User = Depends(get_current_user),
-# ) -> models.User:
-#     if not crud.user.is_active(current_user):
-#         raise HTTPException(status_code=400, detail="Inactive user")
-#     return current_user
-
-
-# def get_current_active_superuser(
-#     current_user: models.User = Depends(get_current_user),
-# ) -> models.User:
-#     if not crud.user.is_superuser(current_user):
-#         raise HTTPException(
-#             status_code=400, detail="The user doesn't have enough privileges"
-#         )
-#     return current_user
