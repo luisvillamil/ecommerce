@@ -2,8 +2,8 @@
 from datetime import timedelta, datetime
 
 # external libraries
+import jwt
 from passlib.context import CryptContext
-from jose import jwt
 
 # internal libraries
 from ecommerce.config import settings
@@ -24,6 +24,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode,
+                             settings.SECRET_KEY,
+                             algorithm=settings.ALGORITHM)
     return encoded_jwt

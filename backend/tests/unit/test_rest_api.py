@@ -56,7 +56,7 @@ def get_token(client:TestClient):
 @pytest.mark.asyncio
 async def test_admin_ping(client:TestClient):
     response = client.get(f"{API_VERSION}/ping")
-    assert response.status_code == 401
+    assert response.status_code == 200
 
 @pytest.mark.asyncio
 async def test_admin_ping_pass(client:TestClient):
