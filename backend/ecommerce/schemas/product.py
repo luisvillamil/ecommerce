@@ -30,49 +30,22 @@ __all__ = (
     "ItemCreate",
     "ItemRead",
     "ItemUpdate",
-    "Image"
+    "Image",
+    "ImageRead"
 )
-
-# Images
-class Image(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    image_url: str
-
-class ImageProductLink(SQLModel, table=True):
-    image_id: Optional[int] = Field(
-        default=None, foreign_key="image.id", primary_key=True
-    )
-    product_id: Optional[int] = Field(
-        default=None, foreign_key="product.id", primary_key=True
-    )
-
-class ImageItemLink(SQLModel, table=True):
-    image_id: Optional[int] = Field(
-        default=None, foreign_key="image.id", primary_key=True
-    )
-    category_id: Optional[int] = Field(
-        default=None, foreign_key="item.id", primary_key=True
-    )
-
-class ImageCategoryLink(SQLModel, table=True):
-    image_id: Optional[int] = Field(
-        default=None, foreign_key="image.id", primary_key=True
-    )
-    category_id: Optional[int] = Field(
-        default=None, foreign_key="category.id", primary_key=True
-    )
 
 # Categories
 class CategoryBase(SQLModel):
     """Base model for Category"""
     name: str = Field(index=True, unique=True)
+    description: str = ""
 
 class Category(CategoryBase, table = True):
     """Main Table model for Category"""
     id: Optional[int] = Field(default=None, primary_key=True)
     products: List["Product"] = Relationship(
         back_populates="category", sa_relationship_kwargs={'cascade': 'all, delete'})
-    images: List[Image] = Relationship(link_model=ImageCategoryLink)
+    images: List["Image"] = Relationship(back_populates="category")
 
 # Products
 class ProductBase(SQLModel):
@@ -86,7 +59,7 @@ class Product(ProductBase, table=True):
     """Main table model for Product"""
     id: Optional[int] = Field(primary_key=True)
     category: Category = Relationship(back_populates="products")
-    images: List[Image] = Relationship(link_model=ImageProductLink)
+    images: List["Image"] = Relationship(back_populates="product")
     product_items: List["Item"] = Relationship(
         back_populates="product", sa_relationship_kwargs={'cascade': 'all, delete'})
     attributes: List["Attribute"] = Relationship(
@@ -135,9 +108,22 @@ class Item(ItemBase, table=True):
     """Item table"""
     id: int = Field(primary_key=True)
     product: "Product" = Relationship(back_populates="product_items")
-    images: List[Image] = Relationship(link_model=ImageItemLink)
+    images: List["Image"] = Relationship(back_populates="item")
     attribute_values: List["AttributeValue"] = Relationship(
         back_populates="item", sa_relationship_kwargs={'cascade': 'all, delete'})
+
+# Images
+
+class ImageBase(SQLModel):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    image_url: str
+class Image(ImageBase, table=True):
+    product_id: Optional[int] = Field(default=None, foreign_key="product.id")
+    item_id: Optional[int] = Field(default=None, foreign_key="item.id")
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    product: Optional[Product] = Relationship(back_populates="images")
+    item: Optional[Item] = Relationship(back_populates="images")
+    category: Optional[Category] = Relationship(back_populates="images")
 
 # pydantic models
 
@@ -147,6 +133,7 @@ class CategoryCreate(CategoryBase):
 class CategoryRead(CategoryBase):
     """Read model for category"""
     id: int
+    images: List[Image]
 
 class AttributeCreate(AttributeBase):
     """Used by API to add extra attributes to product"""
@@ -189,6 +176,7 @@ class ItemRead(ItemBase):
     id: int
     product: ProductRead
     attribute_values: List[AttributeValueRead] = []
+    images: List[Image]
 
 class ItemUpdate(SQLModel):
     """Used by api to update products.
@@ -210,3 +198,6 @@ class ProductReadWithItems(ProductRead):
 class ProductReadWithAttributes(ProductRead):
     """Inherits from CategoryRead, used to display products from category"""
     attributes: Optional[List[AttributeRead]] = []
+
+class ImageRead(ImageBase):
+    pass

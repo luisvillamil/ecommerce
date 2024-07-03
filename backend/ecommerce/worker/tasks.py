@@ -19,7 +19,18 @@ async def upload_image(
     file_path = await storage.upload(await file.read(), filename)
     new_image = Image(image_url=file_path)
     session.add(new_image)
-    # if isinstance(db_object, Product):
-    #     db_object = await db.get_product_by_id(session, db_object.id)
     db_object.images.append(new_image)
+    session.commit()
+    session.refresh(new_image)
+    return new_image
+
+async def delete_image(
+    file_obj: Image,
+    db_object: Union[Product, Category, Item],
+    session: Session):
+    storage = get_storage()
+    await storage.delete(file_obj.image_url)
+    db_object.images.remove(file_obj)
+    session.add(file_obj)
+    session.delete(file_obj)
     session.commit()

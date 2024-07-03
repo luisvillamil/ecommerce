@@ -12,15 +12,10 @@ from ecommerce.db.user import *
 from ecommerce.db.category import *
 from ecommerce.db.product import *
 from ecommerce.db.item import *
+from ecommerce.db.image import *
 
 # constants
 logger = logging.getLogger("uvicorn")
-
-# async def get_user(db, username: str)-> UserInDB | None:
-#     """returns UserInDB model if user is in db"""
-#     if username in db:
-#         user_dict = db[username]
-#         return UserInDB(**user_dict)
 
 class DbClient:
     """Main interface to database"""

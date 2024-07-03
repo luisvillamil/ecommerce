@@ -1,4 +1,5 @@
 # Base libraries
+import os
 from pathlib import Path
 from typing import Iterable
 # external libraries
@@ -22,7 +23,7 @@ class LocalStorage:
             raise FileExistsError
         async with aiofiles.open(file_path, 'wb') as outfile:
             await outfile.write(file_stream)
-        return str(file_path)
+        return os.path.abspath(file_path)
 
     async def download(self, name_list: Iterable[str]):
         """
@@ -39,6 +40,14 @@ class LocalStorage:
     async def delete(self, name: str):
         """Deletes file, must be idempotent.
         """
-        file_path = self.local_dir / name
+        # file_path = self.local_dir / name
+        file_path = Path(name)
+        # check file_path is safe
+        if str(file_path) != str(
+            os.path.abspath(self.local_dir / os.path.basename(name))):
+            raise ValueError(f'image not in {self.local_dir}.')
+        print(f"deleting {file_path}")
         if file_path.exists():
             await aiofiles.os.remove(file_path)
+        else:
+            raise FileNotFoundError(f"{file_path} not found.")

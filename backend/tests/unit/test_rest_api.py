@@ -1,5 +1,7 @@
+from pathlib import Path
+from http import HTTPStatus
 import pytest
-from fastapi import status, Form
+from fastapi import status, Form, UploadFile
 from fastapi.testclient import TestClient
 from fastapi.exceptions import HTTPException
 from sqlmodel import Session, SQLModel, create_engine
@@ -233,3 +235,29 @@ async def test_items(session:Session, client:TestClient):
         f"{API_VERSION}/item/list")
     assert response.status_code == 200
     assert response.json() == []
+
+@pytest.mark.asyncio
+async def test_image(session:Session, client:TestClient):
+    category = {"name": "test_category"}
+    response = client.post(f"{API_VERSION}/image", json = category)
+    assert response.status_code == 401
+    headers = {"Authorization": get_token(client)}
+    cat = Category(name="test_category", id=1)
+    session.add_all([cat])
+    session.commit()
+    # success
+    _test_upload_file = Path('./tests/data', 'test_image.jpg')
+    _files = {'upload_file': _test_upload_file.open('rb')}
+    response = client.post(f"{API_VERSION}/image",
+        headers=headers, files=_files, params={
+            'object_type': 'category',
+            '_id': 1})
+    assert response.status_code == HTTPStatus.OK
+    data = response.json()
+    # delete
+    response = client.delete(f"{API_VERSION}/image",
+        headers=headers, params={
+            'object_type': 'category',
+            'image_id': data['id'],
+            'object_id': 1})
+    assert response.status_code == HTTPStatus.OK
